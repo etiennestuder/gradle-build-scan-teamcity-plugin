@@ -3,7 +3,7 @@ gradle-build-scan-teamcity-plugin
 
 # Overview
 
-[Gradle](http://www.gradle.org) plugin for build scans that notifies [TeamCity](https://www.jetbrains.com/teamcity/) when 
+[Gradle](http://www.gradle.org) plugin for [build scans](https://scans.gradle.com/) that notifies [TeamCity](https://www.jetbrains.com/teamcity/) when 
 a build scan is published during a build. The plugin works in collaboration with the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin).
 
 The TeamCity build scan plugin is hosted at [Bintray's JCenter](https://bintray.com/etienne/gradle-plugins/gradle-build-scan-teamcity-plugin).
