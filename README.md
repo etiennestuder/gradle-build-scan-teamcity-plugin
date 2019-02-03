@@ -61,7 +61,7 @@ Both feedback and contributions are very welcome.
 
 # Acknowledgements
 
-+ [mark-vieira](https://github.com/mark-vieira) (pr #6 that provides message service functionality)
++ [mark-vieira](https://github.com/mark-vieira) (pr that provides message service functionality)
 
 # License
 
