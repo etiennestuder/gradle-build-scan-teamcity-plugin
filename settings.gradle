@@ -1,0 +1,8 @@
+rootProject.name = 'gradle-build-scan-teamcity-plugin'
+
+buildCache {
+  local {
+    enabled = true
+  }
+}
+
