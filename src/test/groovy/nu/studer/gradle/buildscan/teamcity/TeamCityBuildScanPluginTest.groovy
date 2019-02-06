@@ -62,7 +62,7 @@ class TeamCityBuildScanPluginTest extends Specification {
         def result = runner.withArguments("tasks", "-S").build()
 
         then:
-        result.output.contains("##teamcity[buildscan '${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
     }
 
     private void applyScanPlugin(String version) {
