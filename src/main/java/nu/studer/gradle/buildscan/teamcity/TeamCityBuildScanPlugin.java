@@ -13,14 +13,14 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
     private static final String GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV = "GRADLE_BUILDSCAN_TEAMCITY_PLUGIN";
     private static final String BUILD_SCAN_PLUGIN_ID = "com.gradle.build-scan";
     private static final String BUILD_SCAN_SERVICE_MESSAGE_NAME = "nu.studer.teamcity.buildscan.buildScanLifeCycle";
-    private static final String BUILD_STARTED_MESSAGE = "BUILD_STARTED";
+    private static final String BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT = "BUILD_STARTED";
     private static final String BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX = "BUILD_SCAN_URL:";
 
     @Override
     public void apply(Project project) {
         // only register callback if this is a TeamCity build, and we are _not_ using the Gradle build runner
         if (System.getenv(TEAMCITY_VERSION_ENV) != null && System.getenv(GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV) == null) {
-            project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_STARTED_MESSAGE).toString());
+            project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
             project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
                 BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
