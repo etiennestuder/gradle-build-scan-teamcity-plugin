@@ -13,7 +13,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
     private static final String GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV = "GRADLE_BUILDSCAN_TEAMCITY_PLUGIN";
     private static final String BUILD_SCAN_PLUGIN_ID = "com.gradle.build-scan";
     private static final String BUILD_SCAN_SERVICE_MESSAGE_NAME = "nu.studer.teamcity.buildscan.buildScanLifeCycle";
-    private static final String BUILD_SCAN_URL_MESSAGE_PREFIX = "BUILD_SCAN_URL:";
+    private static final String BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT = "BUILD_SCAN_URL:";
 
     @Override
     public void apply(Project project) {
@@ -25,7 +25,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
                     buildScanExtension.buildScanPublished(publishedBuildScan -> {
                             ServiceMessage serviceMessage = ServiceMessage.of(
                                 BUILD_SCAN_SERVICE_MESSAGE_NAME,
-                                BUILD_SCAN_URL_MESSAGE_PREFIX + publishedBuildScan.getBuildScanUri().toString()
+                                BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT + publishedBuildScan.getBuildScanUri().toString()
                             );
                             project.getLogger().quiet(serviceMessage.toString());
                         }
