@@ -56,7 +56,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted for compatible plugin versions"() {
         given:
-        applyScanPlugin("2.4.2")
+        applyScanPlugin("1.16")
 
         when:
         def result = runner.withArguments("tasks", "-S").build()

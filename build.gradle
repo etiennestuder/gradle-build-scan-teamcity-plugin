@@ -1,5 +1,5 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.4.2'
+    id 'com.gradle.build-scan' version '1.16'
     id 'nu.studer.plugindev' version '1.0.12'
     id 'nu.studer.credentials' version '1.0.7'
     id 'groovy'
@@ -9,9 +9,8 @@ group = 'nu.studer'
 version = '1.1-DEV'
 
 buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-    publishAlways()
+    licenseAgreementUrl 'https://gradle.com/terms-of-service'
+    licenseAgree 'yes'
 }
 
 repositories {
@@ -21,9 +20,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:build-scan-plugin:2.4.2'
+    compileOnly 'com.gradle:build-scan-plugin:1.16'
 
-    testCompile('org.spockframework:spock-core:1.3-groovy-2.5') {
+    testCompile('org.spockframework:spock-core:1.3-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
     }
     testCompile 'io.ratpack:ratpack-groovy-test:1.7.5', {
