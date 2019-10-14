@@ -10,7 +10,6 @@ version = '1.1-DEV'
 
 buildScan {
     licenseAgreementUrl 'https://gradle.com/terms-of-service'
-    licenseAgree 'yes'
 }
 
 repositories {
