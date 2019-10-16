@@ -3,6 +3,7 @@ package nu.studer.gradle.buildscan.teamcity
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
@@ -51,32 +52,109 @@ class TeamCityBuildScanPluginTest extends Specification {
         buildScript = projectDir.newFile("build.gradle")
         runner = GradleRunner.create()
                 .withProjectDir(projectDir.root)
-                .withPluginClasspath()
     }
 
-    def "service messages emitted for compatible plugin versions"() {
+    def "service messages emitted for compatible build scan plugin versions"() {
         given:
-        applyScanPlugin("1.16")
+        configurePluginClasspath('buildScanPluginClasspath')
+        buildScript << """
+            plugins {
+                id 'com.gradle.build-scan' version '1.16'
+                id 'nu.studer.build-scan.teamcity'
+            }
+        """.stripIndent()
+        configureScanPlugin()
 
         when:
         def result = runner.withArguments("tasks", "-S").build()
 
         then:
-        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
+        outputContainsExpectedMessage(result.output)
     }
 
-    private void applyScanPlugin(String version) {
-        buildScript.text = """
+    def "service messages emitted when build scan plugin is applied later than the plugin"() {
+        given:
+        configurePluginClasspath('buildScanPluginClasspath')
+        buildScript << """
             plugins {
-                id 'com.gradle.build-scan' version '${version}'
                 id 'nu.studer.build-scan.teamcity'
+                id 'com.gradle.build-scan' version '1.16'
             }
-            
+        """.stripIndent()
+        configureScanPlugin()
+
+        when:
+        def result = runner.withArguments("tasks", "-S").build()
+
+        then:
+        outputContainsExpectedMessage(result.output)
+    }
+
+    def "service messages emitted for compatible Gradle Enterprise plugin versions"() {
+        given:
+        runner.withGradleVersion("6.0-20191014230037+0000") // Gradle 6.0 snapshot is required for GE plugin 3.0
+        configurePluginClasspath('gradleEnterprisePluginClasspath')
+        applyGradleEnterprisePlugin("3.0")
+
+        when:
+        def result = runner.withArguments("tasks", "-S").build()
+
+        then:
+        outputContainsExpectedMessage(result.output)
+    }
+
+    def "no service messages emitted when build scan or Gradle Enterprise plugin is not applied"() {
+        given:
+        configurePluginClasspath('buildScanPluginClasspath')
+        applyPlugin()
+
+        when:
+        def result = runner.withArguments("tasks", "-S").build()
+
+        then:
+        !outputContainsExpectedMessage(result.output)
+    }
+
+    private void configurePluginClasspath(String classpathSystemPropertyName) {
+        runner.withPluginClasspath(PluginUnderTestMetadataReading.readImplementationClasspath() + [new File(System.getProperty(classpathSystemPropertyName))])
+    }
+
+    private void configureScanPlugin() {
+        buildScript << """
             buildScan {
                 server = '${mockScansServer.address}'
                 publishAlways()
             }
         """.stripIndent()
+    }
+
+    private void applyGradleEnterprisePlugin(String version) {
+        projectDir.newFile("settings.gradle") << """ 
+            plugins {
+                id 'com.gradle.enterprise' version '${version}'
+            }
+            
+            apply plugin: "com.gradle.enterprise"
+            gradleEnterprise {
+                buildScan {
+                    server = '${mockScansServer.address}'
+                    publishAlways()
+                }
+            }
+        """.stripIndent()
+        applyPlugin()
+    }
+
+    private void applyPlugin() {
+        buildScript << """
+            plugins {
+                id 'nu.studer.build-scan.teamcity'
+            }
+        """.stripIndent()
+    }
+
+    private boolean outputContainsExpectedMessage(String output) {
+        output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
     }
 
 }

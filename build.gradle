@@ -19,8 +19,16 @@ repositories {
     }
 }
 
+configurations {
+    buildScanPlugin
+    gradleEnterprisePlugin
+}
+
 dependencies {
     compileOnly 'com.gradle:build-scan-plugin:1.16'
+
+    buildScanPlugin 'com.gradle:build-scan-plugin:1.16'
+    gradleEnterprisePlugin 'com.gradle:gradle-enterprise-gradle-plugin:3.0'
 
     testCompile('org.spockframework:spock-core:1.3-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
@@ -54,10 +62,7 @@ bintray {
 
 test {
     environment('TEAMCITY_VERSION', '2019.1')
-}
 
-pluginUnderTestMetadata {
-    // because of weird classloading when testing plugins via TestKit we need to explicitly ensure that the build
-    // scan plugin is on our plugin classpath at test runtime
-    pluginClasspath = pluginClasspath + configurations.compileOnly
+    systemProperty 'buildScanPluginClasspath', configurations.buildScanPlugin.singleFile.absolutePath
+    systemProperty 'gradleEnterprisePluginClasspath', configurations.gradleEnterprisePlugin.singleFile.absolutePath
 }
