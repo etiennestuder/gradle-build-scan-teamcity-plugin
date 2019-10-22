@@ -92,7 +92,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted for compatible Gradle Enterprise plugin versions"() {
         given:
-        runner.withGradleVersion("6.0-20191014230037+0000") // Gradle 6.0 snapshot is required for GE plugin 3.0
+        runner.withGradleVersion("6.0-rc-1") // Gradle 6.0 is required for GE plugin 3.0
         configurePluginClasspath('gradleEnterprisePluginClasspath')
         applyGradleEnterprisePlugin("3.0")
 
