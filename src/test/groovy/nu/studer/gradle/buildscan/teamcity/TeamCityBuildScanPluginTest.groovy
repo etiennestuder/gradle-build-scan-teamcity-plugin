@@ -96,6 +96,7 @@ class TeamCityBuildScanPluginTest extends Specification {
         given:
         runner.withGradleVersion("6.0-rc-1") // Gradle 6.0 is required for GE plugin 3.0
         configureBuildScanPlugin(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH)
+        applyPlugin()
         applyGradleEnterprisePlugin("3.0")
 
         when:
@@ -156,7 +157,6 @@ class TeamCityBuildScanPluginTest extends Specification {
                 }
             }
         """.stripIndent()
-        applyPlugin()
     }
 
     private void applyPlugin() {
