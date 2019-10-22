@@ -62,7 +62,22 @@ bintray {
 
 test {
     environment('TEAMCITY_VERSION', '2019.1')
+    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(buildScanPlugin: configurations.buildScanPlugin, gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
+}
 
-    systemProperty 'buildScanPluginClasspath', configurations.buildScanPlugin.singleFile.absolutePath
-    systemProperty 'gradleEnterprisePluginClasspath', configurations.gradleEnterprisePlugin.singleFile.absolutePath
+class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
+
+    @Classpath
+    FileCollection buildScanPlugin
+    @Classpath
+    FileCollection gradleEnterprisePlugin
+
+    @Override
+    Iterable<String> asArguments() {
+        [
+                "-DbuildScanPluginClasspath=${buildScanPlugin.singleFile.absolutePath}",
+                "-DgradleEnterprisePluginClasspath=${gradleEnterprisePlugin.singleFile.absolutePath}"
+        ]
+    }
+
 }
