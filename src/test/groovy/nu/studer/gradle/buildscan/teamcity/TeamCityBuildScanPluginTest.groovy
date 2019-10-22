@@ -58,7 +58,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted for compatible build scan plugin versions"() {
         given:
-        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
+        configureBuildScanPlugin(BUILD_SCAN_PLUGIN_CLASSPATH)
         buildScript << """
             plugins {
                 id 'com.gradle.build-scan' version '1.16'
@@ -76,7 +76,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted when build scan plugin is applied later than the plugin"() {
         given:
-        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
+        configureBuildScanPlugin(BUILD_SCAN_PLUGIN_CLASSPATH)
         buildScript << """
             plugins {
                 id 'nu.studer.build-scan.teamcity'
@@ -95,7 +95,7 @@ class TeamCityBuildScanPluginTest extends Specification {
     def "service messages emitted for compatible Gradle Enterprise plugin versions"() {
         given:
         runner.withGradleVersion("6.0-rc-1") // Gradle 6.0 is required for GE plugin 3.0
-        configurePluginClasspath(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH)
+        configureBuildScanPlugin(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH)
         applyGradleEnterprisePlugin("3.0")
 
         when:
@@ -107,7 +107,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "no service messages emitted when build scan or Gradle Enterprise plugin is not applied"() {
         given:
-        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
+        configureBuildScanPlugin(BUILD_SCAN_PLUGIN_CLASSPATH)
         applyPlugin()
 
         when:
@@ -119,7 +119,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "no service messages emitted when build scan or Gradle Enterprise plugin are not on the classpath"() {
         given:
-        configurePluginClasspath()
+        configureBuildScanPlugin()
         applyPlugin()
 
         when:
@@ -129,7 +129,7 @@ class TeamCityBuildScanPluginTest extends Specification {
         !outputContainsExpectedMessage(result.output)
     }
 
-    private void configurePluginClasspath(String classpathSystemPropertyName = null) {
+    private void configureBuildScanPlugin(String classpathSystemPropertyName = null) {
         runner.withPluginClasspath(PluginUnderTestMetadataReading.readImplementationClasspath() + (classpathSystemPropertyName ? [new File(System.getProperty(classpathSystemPropertyName))] : []))
     }
 
