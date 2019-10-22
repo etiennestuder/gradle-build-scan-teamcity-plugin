@@ -12,6 +12,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
 
     private static final String TEAMCITY_VERSION_ENV = "TEAMCITY_VERSION";
     private static final String GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV = "GRADLE_BUILDSCAN_TEAMCITY_PLUGIN";
+    private static final String BUILD_SCAN_EXTENSION = "com.gradle.scan.plugin.BuildScanExtension";
     private static final String BUILD_SCAN_PLUGIN_ID = "com.gradle.build-scan";
     private static final String BUILD_SCAN_SERVICE_MESSAGE_NAME = "nu.studer.teamcity.buildscan.buildScanLifeCycle";
     private static final String BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT = "BUILD_STARTED";
@@ -24,10 +25,13 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
             project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
             ExtensionContainer extensions = project.getExtensions();
-            BuildScanExtension buildScanExtension = extensions.findByType(BuildScanExtension.class);
-            if (buildScanExtension != null) {
-                registerCallback(project);
-                return;
+            try {
+                Class<?> buildScanExtensionClass = Class.forName(BUILD_SCAN_EXTENSION);
+                if (extensions.findByType(buildScanExtensionClass) != null) {
+                    registerCallback(project);
+                    return;
+                }
+            } catch (ClassNotFoundException ignore) {
             }
             project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> registerCallback(project));
         }

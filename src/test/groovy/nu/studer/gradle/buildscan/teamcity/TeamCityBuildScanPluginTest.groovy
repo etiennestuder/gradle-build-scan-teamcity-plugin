@@ -15,6 +15,8 @@ import java.util.zip.GZIPOutputStream
 class TeamCityBuildScanPluginTest extends Specification {
 
     public static final String PUBLIC_SCAN_ID = "i2wepy2gr7ovw"
+    public static final String BUILD_SCAN_PLUGIN_CLASSPATH = 'buildScanPluginClasspath'
+    public static final String GRADLE_ENTERPRISE_PLUGIN_CLASSPATH = 'gradleEnterprisePluginClasspath'
 
     @Rule
     TemporaryFolder projectDir = new TemporaryFolder()
@@ -56,7 +58,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted for compatible build scan plugin versions"() {
         given:
-        configurePluginClasspath('buildScanPluginClasspath')
+        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
         buildScript << """
             plugins {
                 id 'com.gradle.build-scan' version '1.16'
@@ -74,7 +76,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "service messages emitted when build scan plugin is applied later than the plugin"() {
         given:
-        configurePluginClasspath('buildScanPluginClasspath')
+        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
         buildScript << """
             plugins {
                 id 'nu.studer.build-scan.teamcity'
@@ -93,7 +95,7 @@ class TeamCityBuildScanPluginTest extends Specification {
     def "service messages emitted for compatible Gradle Enterprise plugin versions"() {
         given:
         runner.withGradleVersion("6.0-rc-1") // Gradle 6.0 is required for GE plugin 3.0
-        configurePluginClasspath('gradleEnterprisePluginClasspath')
+        configurePluginClasspath(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH)
         applyGradleEnterprisePlugin("3.0")
 
         when:
@@ -105,7 +107,7 @@ class TeamCityBuildScanPluginTest extends Specification {
 
     def "no service messages emitted when build scan or Gradle Enterprise plugin is not applied"() {
         given:
-        configurePluginClasspath('buildScanPluginClasspath')
+        configurePluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH)
         applyPlugin()
 
         when:
@@ -115,8 +117,20 @@ class TeamCityBuildScanPluginTest extends Specification {
         !outputContainsExpectedMessage(result.output)
     }
 
-    private void configurePluginClasspath(String classpathSystemPropertyName) {
-        runner.withPluginClasspath(PluginUnderTestMetadataReading.readImplementationClasspath() + [new File(System.getProperty(classpathSystemPropertyName))])
+    def "no service messages emitted when build scan or Gradle Enterprise plugin are not on the classpath"() {
+        given:
+        configurePluginClasspath()
+        applyPlugin()
+
+        when:
+        def result = runner.withArguments("tasks", "-S").build()
+
+        then:
+        !outputContainsExpectedMessage(result.output)
+    }
+
+    private void configurePluginClasspath(String classpathSystemPropertyName = null) {
+        runner.withPluginClasspath(PluginUnderTestMetadataReading.readImplementationClasspath() + (classpathSystemPropertyName ? [new File(System.getProperty(classpathSystemPropertyName))] : []))
     }
 
     private void configureScanPlugin() {
