@@ -24,20 +24,32 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
         if (System.getenv(TEAMCITY_VERSION_ENV) != null && System.getenv(GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV) == null) {
             project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
-            ExtensionContainer extensions = project.getExtensions();
             try {
+                ExtensionContainer extensions = project.getExtensions();
                 Class<?> buildScanExtensionClass = Class.forName(BUILD_SCAN_EXTENSION);
                 if (extensions.findByType(buildScanExtensionClass) != null) {
-                    registerCallback(project);
-                    return;
+                    maybeAddBuildScanPublishedHook(project);
+                } else {
+                    // The Gradle Enterprise Gradle plugin or the build scan plugin is available on the classpath,
+                    // but has not been applied yet.
+                    // This rules out the possibility of the plugin being applied as a Settings plugin.
+                    // Register a callback if the plugin gets applied as a Project plugin later on
+                    registerBuildScanPluginApplicationCallback(project);
                 }
             } catch (ClassNotFoundException ignore) {
+                // Neither the Gradle Enterprise Gradle plugin nor the build scan plugin is available on the classpath.
+                // This rules out the possibility of the plugin being applied as a Settings plugin.
+                // Register a callback if the plugin gets applied as a Project plugin later on
+                registerBuildScanPluginApplicationCallback(project);
             }
-            project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> registerCallback(project));
         }
     }
 
-    private static void registerCallback(Project project) {
+    private static void registerBuildScanPluginApplicationCallback(Project project) {
+        project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> maybeAddBuildScanPublishedHook(project));
+    }
+
+    private static void maybeAddBuildScanPublishedHook(Project project) {
         BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
         if (supportsScanPublishedListener(buildScanExtension)) {
             buildScanExtension.buildScanPublished(publishedBuildScan -> {
@@ -52,7 +64,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
     }
 
     private static boolean supportsScanPublishedListener(BuildScanExtension extension) {
-        Class clazz = extension.getClass();
+        Class<?> clazz = extension.getClass();
         for (Method method : clazz.getMethods()) {
             if (method.getName().equals("buildScanPublished")) {
                 return true;
