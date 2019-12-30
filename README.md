@@ -31,23 +31,6 @@ The service message sent via Gradle's logging infrastructure follows the message
 
 Apply the `nu.studer.build-scan.teamcity` plugin to your Gradle plugin project.
 
-### Gradle 1.x and 2.0
-
-```groovy
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'nu.studer:gradle-build-scan-teamcity-plugin:1.0'
-    }
-}
-
-apply plugin: 'nu.studer.build-scan.teamcity'
-```
-
-### Gradle 2.1 and higher
-
 ```groovy
 plugins {
   id 'nu.studer.build-scan.teamcity' version '1.0'
