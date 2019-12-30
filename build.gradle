@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.gradle:build-scan-plugin:1.16'
+    compileOnly 'com.gradle:build-scan-plugin:2.4.2'
 
     testCompile('org.spockframework:spock-core:1.3-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
