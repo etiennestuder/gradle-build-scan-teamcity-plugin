@@ -3,6 +3,7 @@ package nu.studer.gradle.buildscan.teamcity;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.util.GradleVersion;
 
 import java.lang.reflect.Method;
 
@@ -18,6 +19,11 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        // abort if old Gradle version is not supported
+        if (GradleVersion.current().getBaseVersion().compareTo(GradleVersion.version("5.0")) < 0) {
+            throw new IllegalStateException("This version of the TeamCity build scan plugin is not compatible with Gradle < 5.0");
+        }
+
         // only register callback if this is a TeamCity build, and we are _not_ using the Gradle build runner
         if (System.getenv(TEAMCITY_VERSION_ENV) != null && System.getenv(GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV) == null) {
             project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
