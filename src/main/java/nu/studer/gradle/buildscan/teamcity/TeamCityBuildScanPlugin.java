@@ -24,24 +24,26 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
             throw new IllegalStateException("This version of the TeamCity build scan plugin is not compatible with Gradle < 5.0");
         }
 
-        // only register callback if this is a TeamCity build, and we are _not_ using the Gradle build runner
-        if (System.getenv(TEAMCITY_VERSION_ENV) != null && System.getenv(GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV) == null) {
-            project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
-
-            project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
-                BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
-                if (supportsScanPublishedListener(buildScanExtension)) {
-                    buildScanExtension.buildScanPublished(publishedBuildScan -> {
-                            ServiceMessage serviceMessage = ServiceMessage.of(
-                                BUILD_SCAN_SERVICE_MESSAGE_NAME,
-                                BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
-                            );
-                            project.getLogger().quiet(serviceMessage.toString());
-                        }
-                    );
-                }
-            });
+        // do not register callback if this is not a TeamCity build or we are using the TeamCity Gradle build runner with the TC build scan plugin applied
+        if (System.getenv(TEAMCITY_VERSION_ENV) == null || System.getenv(GRADLE_BUILDSCAN_TEAMCITY_PLUGIN_ENV) != null) {
+            return;
         }
+
+        project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
+
+        project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
+            BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
+            if (supportsScanPublishedListener(buildScanExtension)) {
+                buildScanExtension.buildScanPublished(publishedBuildScan -> {
+                        ServiceMessage serviceMessage = ServiceMessage.of(
+                            BUILD_SCAN_SERVICE_MESSAGE_NAME,
+                            BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
+                        );
+                        project.getLogger().quiet(serviceMessage.toString());
+                    }
+                );
+            }
+        });
     }
 
     private static boolean supportsScanPublishedListener(BuildScanExtension extension) {
