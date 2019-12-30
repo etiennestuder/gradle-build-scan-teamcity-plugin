@@ -17,6 +17,7 @@ buildScan {
 
 repositories {
     maven {
+        // required for compileOnly dependency on build scan plugin API
         url 'https://plugins.gradle.org/m2/'
     }
 }
@@ -24,13 +25,13 @@ repositories {
 dependencies {
     compileOnly 'com.gradle:build-scan-plugin:2.4.2'
 
-    testCompile('org.spockframework:spock-core:1.3-groovy-2.4') {
-        exclude group: 'org.codehaus.groovy'
+    testCompile('org.spockframework:spock-core:1.3-groovy-2.5') {
+        exclude module: 'groovy-all'
     }
     testCompile 'io.ratpack:ratpack-groovy-test:1.7.5', {
-        exclude group: 'org.codehaus.groovy'
+        exclude module: 'groovy-all'
     }
-    testCompile 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.10.0'
+    testCompile 'com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.10.1'
 }
 
 plugindev {
