@@ -5,6 +5,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.util.GradleVersion;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("unused")
@@ -18,7 +19,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
     private static final String BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX = "BUILD_SCAN_URL:";
 
     @Override
-    public void apply(Project project) {
+    public void apply(@Nonnull Project project) {
         // abort if old Gradle version is not supported
         if (GradleVersion.current().getBaseVersion().compareTo(GradleVersion.version("5.0")) < 0) {
             throw new IllegalStateException("This version of the TeamCity build scan plugin is not compatible with Gradle < 5.0");
@@ -29,11 +30,15 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
             return;
         }
 
+        init(project);
+    }
+
+    private void init(Project project) {
         project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
         project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
             BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
-            if (supportsScanPublishedListener(buildScanExtension)) {
+            if (supportsBuildScanPublishedListener(buildScanExtension)) {
                 buildScanExtension.buildScanPublished(publishedBuildScan -> {
                         ServiceMessage serviceMessage = ServiceMessage.of(
                             BUILD_SCAN_SERVICE_MESSAGE_NAME,
@@ -46,8 +51,8 @@ public class TeamCityBuildScanPlugin implements Plugin<Project> {
         });
     }
 
-    private static boolean supportsScanPublishedListener(BuildScanExtension extension) {
-        Class clazz = extension.getClass();
+    private static boolean supportsBuildScanPublishedListener(BuildScanExtension extension) {
+        Class<?> clazz = extension.getClass();
         for (Method method : clazz.getMethods()) {
             if (method.getName().equals("buildScanPublished")) {
                 return true;
