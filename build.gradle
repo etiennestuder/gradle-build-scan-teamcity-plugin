@@ -22,8 +22,16 @@ repositories {
     }
 }
 
+configurations {
+    buildScanPlugin
+    gradleEnterprisePlugin
+}
+
 dependencies {
-    compileOnly 'com.gradle:build-scan-plugin:2.4.2'
+    buildScanPlugin 'com.gradle:build-scan-plugin:2.4.2'
+    gradleEnterprisePlugin 'com.gradle:gradle-enterprise-gradle-plugin:3.1.1'
+
+    compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.1.1'
 
     testCompile('org.spockframework:spock-core:1.3-groovy-2.5') {
         exclude module: 'groovy-all'
@@ -57,10 +65,23 @@ bintray {
 
 test {
     environment('TEAMCITY_VERSION', '2019.1')
+    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(buildScanPlugin: configurations.buildScanPlugin, gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
 
-pluginUnderTestMetadata {
-    // because of weird classloading when testing plugins via TestKit we need to explicitly ensure that the build
-    // scan plugin is on our plugin classpath at test runtime
-    pluginClasspath = pluginClasspath + configurations.compileOnly
+final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
+
+    @Classpath
+    FileCollection buildScanPlugin
+
+    @Classpath
+    FileCollection gradleEnterprisePlugin
+
+    @Override
+    Iterable<String> asArguments() {
+        [
+            "-DbuildScanPluginClasspath=${buildScanPlugin.singleFile.absolutePath}",
+            "-DgradleEnterprisePluginClasspath=${gradleEnterprisePlugin.singleFile.absolutePath}"
+        ]
+    }
+
 }

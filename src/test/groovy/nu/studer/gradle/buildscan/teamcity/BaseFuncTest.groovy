@@ -2,6 +2,7 @@ package nu.studer.gradle.buildscan.teamcity
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.gradle.util.GradleVersion
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -33,15 +34,17 @@ abstract class BaseFuncTest extends Specification {
 
   File workspaceDir
   GradleVersion gradleVersion
+  List<File> testKitRunnerPluginClasspath
 
   void setup() {
     workspaceDir = new File(tempDir.root, testName.methodName)
     gradleVersion = determineGradleVersion()
+    testKitRunnerPluginClasspath = PluginUnderTestMetadataReading.readImplementationClasspath()
   }
 
   protected BuildResult runWithArguments(String... args) {
     GradleRunner.create()
-            .withPluginClasspath()
+            .withPluginClasspath(testKitRunnerPluginClasspath)
             .withTestKitDir(testKitDir)
             .withProjectDir(workspaceDir)
             .withArguments(args)
