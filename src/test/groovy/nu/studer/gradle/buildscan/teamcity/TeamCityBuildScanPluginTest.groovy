@@ -2,6 +2,7 @@ package nu.studer.gradle.buildscan.teamcity
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
+import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.gradle.util.GradleVersion
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
@@ -169,12 +170,8 @@ apply plugin: 'nu.studer.build-scan.teamcity'
         !result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
-    private def implClasspath() {
-        def properties = new Properties()
-        def resource = getClass().classLoader.getResource('plugin-under-test-metadata.properties')
-        resource.withInputStream { stream -> properties.load(stream) }
-        def implClasspath = properties.get('implementation-classpath')
-        implClasspath.split(File.pathSeparator).collect { it.replace('\\', '\\\\') }.collect { "'$it'" }.join(",")
+    private static def implClasspath() {
+        PluginUnderTestMetadataReading.readImplementationClasspath().collect { it.absolutePath.replace('\\', '\\\\') }.collect { "'$it'" }.join(",")
     }
 
     protected void addToTestKitRunnerPluginClasspath(String classpathSystemPropertyName) {
