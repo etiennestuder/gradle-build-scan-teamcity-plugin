@@ -1,5 +1,6 @@
 package nu.studer.gradle.buildscan.teamcity;
 
+import com.gradle.enterprise.gradleplugin.GradleEnterpriseExtension;
 import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -13,6 +14,7 @@ import org.gradle.util.GradleVersion;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class TeamCityBuildScanPlugin implements Plugin<Object> {
@@ -51,32 +53,38 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
 
     private void init(Settings settings) {
         settings.getGradle().settingsEvaluated(s ->
-            registerListener(Settings.class, settings.getGradle(), settings.getPluginManager(), settings.getExtensions(), GRADLE_ENTERPRISE_PLUGIN_ID)
+            registerListener(Settings.class, settings.getGradle(), settings.getPluginManager(), settings.getExtensions(),
+                (e) -> e.getByType(GradleEnterpriseExtension.class).getBuildScan(), GRADLE_ENTERPRISE_PLUGIN_ID)
         );
     }
 
     private void init(Project project) {
-        registerListener(Project.class, project.getGradle(), project.getPluginManager(), project.getExtensions(), BUILD_SCAN_PLUGIN_ID);
+        registerListener(Project.class, project.getGradle(), project.getPluginManager(), project.getExtensions(),
+            (e) -> e.getByType(BuildScanExtension.class), BUILD_SCAN_PLUGIN_ID);
     }
 
-    private void registerListener(Class<?> loggerClass, Gradle gradle, PluginManager pluginManager, ExtensionContainer extensions, String pluginId) {
+    private void registerListener(Class<?> loggerClass, Gradle gradle, PluginManager pluginManager, ExtensionContainer extensions, Function<ExtensionContainer, BuildScanExtension> buildScanExtensionProvider, String pluginId) {
         Logger logger = Logging.getLogger(loggerClass);
 
         logger.quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
         pluginManager.withPlugin(pluginId, appliedPlugin -> {
-            BuildScanExtension buildScanExtension = extensions.getByType(BuildScanExtension.class);
-            if (supportsBuildScanPublishedListener(buildScanExtension)) {
-                buildScanExtension.buildScanPublished(publishedBuildScan -> {
-                        ServiceMessage serviceMessage = ServiceMessage.of(
-                            BUILD_SCAN_SERVICE_MESSAGE_NAME,
-                            BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
-                        );
-                        logger.quiet(serviceMessage.toString());
-                    }
-                );
-            }
+            BuildScanExtension buildScanExtension = buildScanExtensionProvider.apply(extensions);
+            registerListener(logger, buildScanExtension);
         });
+    }
+
+    private void registerListener(Logger logger, BuildScanExtension buildScanExtension) {
+        if (supportsBuildScanPublishedListener(buildScanExtension)) {
+            buildScanExtension.buildScanPublished(publishedBuildScan -> {
+                    ServiceMessage serviceMessage = ServiceMessage.of(
+                        BUILD_SCAN_SERVICE_MESSAGE_NAME,
+                        BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
+                    );
+                    logger.quiet(serviceMessage.toString());
+                }
+            );
+        }
     }
 
     private static boolean supportsBuildScanPublishedListener(BuildScanExtension extension) {
