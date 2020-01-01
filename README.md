@@ -70,6 +70,8 @@ Both feedback and contributions are very welcome.
 
 # Acknowledgements
 
++ [facewindu](https://github.com/facewindu) (pr for Gradle Enterprise plugin integration)
++ [guylabs](https://github.com/guylabs) (pr for Gradle Enterprise plugin integration)
 + [mark-vieira](https://github.com/mark-vieira) (pr that provides message service functionality)
 
 # License
