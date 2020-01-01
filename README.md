@@ -7,21 +7,27 @@ gradle-build-scan-teamcity-plugin
 
 [Gradle](http://www.gradle.org) plugin that notifies [TeamCity](https://www.jetbrains.com/teamcity/) when
 a build scan is published during a build. The plugin works in collaboration with
-the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan -plugin).
+the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin).
 
 Build scans are available as a free service on [scans.gradle.com](https://scans.gradle.com/) and
 commercially via [Gradle Enterprise](https://gradle.com/enterprise).
 
-The TeamCity Build Scan Gradle plugin is hosted at [Bintray's JCenter](https://bintray.com/etienne/gradle-plugins/gradle-build-scan-teamcity-plugin).
+The plugin is hosted at [Bintray's JCenter](https://bintray.com/etienne/gradle-plugins/gradle-build-scan-teamcity-plugin).
+
+## Build scan
+
+Recent build scan: https://scans.gradle.com/s/j56egl3btxzsq
+
+Find out more about build scans for Gradle and Maven at https://scans.gradle.com.
 
 # Goals
 
-When not using TeamCity's GradleRunner to launch Gradle builds, this plugin can be used to notify TeamCity about the scans that were published while
-running a build. If you use the GradleRunner to launch Gradle builds, there is no need to apply the TeamCity Build Scan Gradle plugin to your builds.
+When not using TeamCity's GradleRunner to launch Gradle builds, this plugin can be used to notify TeamCity about the build scans that were published while
+running a build. If you use the GradleRunner to launch Gradle builds, there is no need to apply the plugin to your builds.
 
 # Functionality
 
-The TeamCity Build Scan Gradle plugin sends a service message that contains the published build scan URLs to TeamCity via Gradle's logging infrastructure. The service
+The plugin sends a service message that contains the published build scan URLs to TeamCity via Gradle's logging infrastructure. The service
 message is only interpreted by TeamCity if the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin) is enabled
 on the TeamCity server.
 
@@ -31,7 +37,7 @@ The service message sent via Gradle's logging infrastructure follows the message
 
 # Configuration
 
-## Apply TeamCity Build Scan Gradle plugin
+## Applying the plugin
 
 ### Project-application
 
