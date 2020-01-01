@@ -7,6 +7,8 @@ import org.gradle.api.initialization.Settings;
 import org.gradle.api.internal.GradleInternal;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.LogLevel;
+import org.gradle.api.plugins.ExtensionContainer;
+import org.gradle.api.plugins.PluginManager;
 import org.gradle.internal.logging.text.StyledTextOutput;
 import org.gradle.internal.logging.text.StyledTextOutputFactory;
 import org.gradle.internal.service.ServiceLookupException;
@@ -53,34 +55,22 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
     }
 
     private void init(Settings settings) {
-        settings.getGradle().settingsEvaluated(s -> {
-            LoggingController logging = new LoggingController(settings.getGradle());
-
-            logging.log(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
-
-            settings.getPluginManager().withPlugin(GRADLE_ENTERPRISE_PLUGIN_ID, appliedPlugin -> {
-                BuildScanExtension buildScanExtension = settings.getExtensions().getByType(BuildScanExtension.class);
-                if (supportsBuildScanPublishedListener(buildScanExtension)) {
-                    buildScanExtension.buildScanPublished(publishedBuildScan -> {
-                            ServiceMessage serviceMessage = ServiceMessage.of(
-                                BUILD_SCAN_SERVICE_MESSAGE_NAME,
-                                BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
-                            );
-                            logging.log(serviceMessage.toString());
-                        }
-                    );
-                }
-            });
-        });
+        settings.getGradle().settingsEvaluated(s ->
+            registerListener(settings.getGradle(), settings.getPluginManager(), settings.getExtensions(), GRADLE_ENTERPRISE_PLUGIN_ID)
+        );
     }
 
     private void init(Project project) {
-        LoggingController logging = new LoggingController(project.getGradle());
+        registerListener(project.getGradle(), project.getPluginManager(), project.getExtensions(), BUILD_SCAN_PLUGIN_ID);
+    }
+
+    private void registerListener(Gradle gradle, PluginManager pluginManager, ExtensionContainer extensions, String pluginId) {
+        LoggingController logging = new LoggingController(gradle);
 
         logging.log(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
-        project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
-            BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
+        pluginManager.withPlugin(pluginId, appliedPlugin -> {
+            BuildScanExtension buildScanExtension = extensions.getByType(BuildScanExtension.class);
             if (supportsBuildScanPublishedListener(buildScanExtension)) {
                 buildScanExtension.buildScanPublished(publishedBuildScan -> {
                         ServiceMessage serviceMessage = ServiceMessage.of(
