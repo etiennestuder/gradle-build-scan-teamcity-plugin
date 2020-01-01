@@ -4,6 +4,14 @@ import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.internal.GradleInternal;
+import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.LogLevel;
+import org.gradle.internal.logging.text.StyledTextOutput;
+import org.gradle.internal.logging.text.StyledTextOutputFactory;
+import org.gradle.internal.service.ServiceLookupException;
+import org.gradle.internal.service.ServiceRegistry;
+import org.gradle.internal.service.UnknownServiceException;
 import org.gradle.util.GradleVersion;
 
 import javax.annotation.Nonnull;
@@ -44,7 +52,9 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
     }
 
     private void init(Project project) {
-        project.getLogger().quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
+        LoggingController logging = new LoggingController(project.getGradle());
+
+        logging.log(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
 
         project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> {
             BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
@@ -54,7 +64,7 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
                             BUILD_SCAN_SERVICE_MESSAGE_NAME,
                             BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
                         );
-                        project.getLogger().quiet(serviceMessage.toString());
+                        logging.log(serviceMessage.toString());
                     }
                 );
             }
@@ -69,6 +79,45 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
             }
         }
         return false;
+    }
+
+    private static final class LoggingController {
+
+        private final StyledTextOutput styledTextOutput;
+
+        private LoggingController(Gradle gradle) {
+            StyledTextOutputFactory styledTextOutputFactory = ServicesFactory.get(gradle, StyledTextOutputFactory.class);
+            this.styledTextOutput = styledTextOutputFactory.create(TeamCityBuildScanPlugin.class, LogLevel.QUIET);
+        }
+
+        private void log(String msg) {
+            styledTextOutput.println(msg);
+        }
+
+    }
+
+    private static final class ServicesFactory {
+
+        private static <T> T get(Gradle gradle, Class<T> type) {
+            return get(((GradleInternal) gradle).getServices(), type);
+        }
+
+        private static <T> T get(ServiceRegistry services, Class<T> type) {
+            T service = maybeGet(services, type);
+            if (service == null) {
+                throw new IllegalStateException(String.format("Failed to load service '%s'", type));
+            }
+            return service;
+        }
+
+        private static <T> T maybeGet(ServiceRegistry services, Class<T> type) {
+            try {
+                return services.get(type);
+            } catch (UnknownServiceException | ServiceLookupException e) {
+                return null;
+            }
+        }
+
     }
 
 }
