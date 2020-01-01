@@ -9,7 +9,7 @@ import java.util.zip.GZIPOutputStream
 
 class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
-    public static final String PUBLIC_SCAN_ID = "i2wepy2gr7ovw"
+    public static final String PUBLIC_BUILD_SCAN_ID = "i2wepy2gr7ovw"
 
     @AutoCleanup
     def mockScansServer = GroovyEmbeddedApp.of {
@@ -17,14 +17,14 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
         handlers {
             post("in/:gradleVersion/:pluginVersion") { ctx ->
-                def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_SCAN_ID
+                def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_BUILD_SCAN_ID
                 def os = new ByteArrayOutputStream()
 
                 new GZIPOutputStream(os).withCloseable { stream ->
                     def generator = objectMapper.getFactory().createGenerator(stream)
                     generator.writeStartObject()
                     generator.writeFieldName("id")
-                    generator.writeString(PUBLIC_SCAN_ID)
+                    generator.writeString(PUBLIC_BUILD_SCAN_ID)
                     generator.writeFieldName("scanUrl")
                     generator.writeString(scanUrlString)
                     generator.writeEndObject()
@@ -36,7 +36,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
         }
     }
 
-    def "service messages emitted for compatible plugin versions"() {
+    def "service messages emitted when build scan plugin applied in project build file"() {
         given:
         buildFile << """
             plugins {
@@ -55,7 +55,23 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
         then:
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_STARTED'")
-        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
+    }
+
+    def "no service messages emitted when build scan plugin not applied in project build file"() {
+        given:
+        buildFile << """
+            plugins {
+                id 'nu.studer.build-scan.teamcity'
+            }
+"""
+
+        when:
+        def result = runWithArguments('tasks', '-S')
+
+        then:
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_STARTED'")
+        !result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
 }
