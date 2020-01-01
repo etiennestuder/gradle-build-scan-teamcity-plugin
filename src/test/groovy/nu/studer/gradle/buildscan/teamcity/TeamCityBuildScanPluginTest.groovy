@@ -2,25 +2,14 @@ package nu.studer.gradle.buildscan.teamcity
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
-import spock.lang.Specification
 
 import java.util.zip.GZIPOutputStream
 
-class TeamCityBuildScanPluginTest extends Specification {
+class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
     public static final String PUBLIC_SCAN_ID = "i2wepy2gr7ovw"
-
-    @Rule
-    TemporaryFolder projectDir = new TemporaryFolder()
-
-    File buildScript
-
-    GradleRunner runner
 
     @AutoCleanup
     def mockScansServer = GroovyEmbeddedApp.of {
@@ -47,36 +36,26 @@ class TeamCityBuildScanPluginTest extends Specification {
         }
     }
 
-    def setup() {
-        buildScript = projectDir.newFile("build.gradle")
-        runner = GradleRunner.create()
-                .withProjectDir(projectDir.root)
-                .withPluginClasspath()
-    }
-
     def "service messages emitted for compatible plugin versions"() {
         given:
-        applyScanPlugin("1.16")
-
-        when:
-        def result = runner.withArguments("tasks", "-S").build()
-
-        then:
-        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
-    }
-
-    private void applyScanPlugin(String version) {
-        buildScript.text = """
+        buildFile << """
             plugins {
-                id 'com.gradle.build-scan' version '${version}'
+                id 'com.gradle.build-scan' version '2.4.2'
                 id 'nu.studer.build-scan.teamcity'
             }
-            
+
             buildScan {
                 server = '${mockScansServer.address}'
                 publishAlways()
             }
-        """.stripIndent()
+"""
+
+        when:
+        def result = runWithArguments('tasks', '-S')
+
+        then:
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_STARTED'")
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_SCAN_ID}'")
     }
 
 }
