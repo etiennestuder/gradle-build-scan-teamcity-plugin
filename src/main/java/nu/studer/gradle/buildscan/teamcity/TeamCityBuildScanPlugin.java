@@ -5,16 +5,11 @@ import com.gradle.scan.plugin.BuildScanExtension;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.initialization.Settings;
-import org.gradle.api.invocation.Gradle;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.api.plugins.ExtensionContainer;
-import org.gradle.api.plugins.PluginManager;
 import org.gradle.util.GradleVersion;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class TeamCityBuildScanPlugin implements Plugin<Object> {
@@ -52,49 +47,54 @@ public class TeamCityBuildScanPlugin implements Plugin<Object> {
     }
 
     private void init(Settings settings) {
-        settings.getGradle().settingsEvaluated(s ->
-            registerListener(Settings.class, settings.getGradle(), settings.getPluginManager(), settings.getExtensions(),
-                (e) -> e.getByType(GradleEnterpriseExtension.class).getBuildScan(), GRADLE_ENTERPRISE_PLUGIN_ID)
+        settings.getGradle().settingsEvaluated(s -> {
+                Logger logger = Logging.getLogger(Settings.class);
+                logger.quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
+                settings.getPluginManager().withPlugin(GRADLE_ENTERPRISE_PLUGIN_ID, appliedPlugin -> SettingsApplication.apply(settings, logger));
+            }
         );
     }
 
     private void init(Project project) {
-        registerListener(Project.class, project.getGradle(), project.getPluginManager(), project.getExtensions(),
-            (e) -> e.getByType(BuildScanExtension.class), BUILD_SCAN_PLUGIN_ID);
-    }
-
-    private void registerListener(Class<?> loggerClass, Gradle gradle, PluginManager pluginManager, ExtensionContainer extensions, Function<ExtensionContainer, BuildScanExtension> buildScanExtensionProvider, String pluginId) {
-        Logger logger = Logging.getLogger(loggerClass);
-
+        Logger logger = Logging.getLogger(Project.class);
         logger.quiet(ServiceMessage.of(BUILD_SCAN_SERVICE_MESSAGE_NAME, BUILD_SCAN_SERVICE_STARTED_MESSAGE_ARGUMENT).toString());
-
-        pluginManager.withPlugin(pluginId, appliedPlugin -> {
-            BuildScanExtension buildScanExtension = buildScanExtensionProvider.apply(extensions);
-            registerListener(logger, buildScanExtension);
-        });
+        project.getPluginManager().withPlugin(BUILD_SCAN_PLUGIN_ID, appliedPlugin -> ProjectApplication.apply(project, logger));
     }
 
-    private void registerListener(Logger logger, BuildScanExtension buildScanExtension) {
-        if (supportsBuildScanPublishedListener(buildScanExtension)) {
+    private static final class SettingsApplication {
+
+        private static void apply(Settings settings, Logger logger) {
+            BuildScanExtension buildScanExtension = settings.getExtensions().getByType(GradleEnterpriseExtension.class).getBuildScan();
+            BaseApplication.registerListener(buildScanExtension, logger);
+        }
+
+    }
+
+    private static final class ProjectApplication {
+
+        private static void apply(Project project, Logger logger) {
+            BuildScanExtension buildScanExtension = project.getExtensions().getByType(BuildScanExtension.class);
+            BaseApplication.registerListener(buildScanExtension, logger);
+        }
+
+    }
+
+    private static final class BaseApplication {
+
+        private static void registerListener(BuildScanExtension buildScanExtension, Logger logger) {
             buildScanExtension.buildScanPublished(publishedBuildScan -> {
                     ServiceMessage serviceMessage = ServiceMessage.of(
-                        BUILD_SCAN_SERVICE_MESSAGE_NAME,
-                        BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
+                        TeamCityBuildScanPlugin.BUILD_SCAN_SERVICE_MESSAGE_NAME,
+                        TeamCityBuildScanPlugin.BUILD_SCAN_SERVICE_URL_MESSAGE_ARGUMENT_PREFIX + publishedBuildScan.getBuildScanUri().toString()
                     );
                     logger.quiet(serviceMessage.toString());
                 }
             );
         }
-    }
 
-    private static boolean supportsBuildScanPublishedListener(BuildScanExtension extension) {
-        Class<?> clazz = extension.getClass();
-        for (Method method : clazz.getMethods()) {
-            if (method.getName().equals("buildScanPublished")) {
-                return true;
-            }
+        private BaseApplication() {
         }
-        return false;
+
     }
 
 }

@@ -95,7 +95,6 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
     def "no service messages emitted when build scan plugin not applied in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
-        addToTestKitRunnerPluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH_SYS_PROP)
 
         and:
         buildFile << """
@@ -112,7 +111,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
         !result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
-    void "can apply plugin and access credentials in settings.gradle"() {
+    void "service messages emitted when Gradle Enterprise plugin applied in settings build file"() {
         given:
         gradleVersion = GradleVersion.version('6.0.1')
         addToTestKitRunnerPluginClasspath(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP)
@@ -145,6 +144,29 @@ gradleEnterprise {
         then:
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_STARTED'")
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
+    }
+
+    void "no service messages emitted when Gradle Enterprise plugin not applied in settings build file"() {
+        given:
+        gradleVersion = GradleVersion.version('6.0.1')
+
+        and:
+        settingsFile << """
+buildscript {
+    dependencies {
+        classpath files(${implClasspath()})
+    }
+}
+
+apply plugin: 'nu.studer.build-scan.teamcity'
+"""
+
+        when:
+        def result = runWithArguments('tasks', '-S')
+
+        then:
+        result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_STARTED'")
+        !result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
     private def implClasspath() {
