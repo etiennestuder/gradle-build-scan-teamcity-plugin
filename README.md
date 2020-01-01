@@ -5,7 +5,7 @@ gradle-build-scan-teamcity-plugin
 
 # Overview
 
-[Gradle](http://www.gradle.org) plugin for [build scans](https://scans.gradle.com/) that notifies [TeamCity](https://www.jetbrains.com/teamcity/) when 
+[Gradle](http://www.gradle.org) plugin for [build scans](https://scans.gradle.com/) that notifies [TeamCity](https://www.jetbrains.com/teamcity/) when
 a build scan is published during a build. The plugin works in collaboration with the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin).
 
 The TeamCity build scan Gradle plugin is hosted at [Bintray's JCenter](https://bintray.com/etienne/gradle-plugins/gradle-build-scan-teamcity-plugin).
@@ -13,12 +13,12 @@ The TeamCity build scan Gradle plugin is hosted at [Bintray's JCenter](https://b
 # Goals
 
 When not using TeamCity's GradleRunner to launch Gradle builds, this plugin can be used to notify TeamCity about the scans that were published while
-running a build. If you use the GradleRunner to launch Gradle builds, there is no need to apply the TeamCity build scan Gradle plugin to your builds. 
+running a build. If you use the GradleRunner to launch Gradle builds, there is no need to apply the TeamCity build scan Gradle plugin to your builds.
 
 # Functionality
 
-The TeamCity build scan Gradle plugin sends a service message that contains the published build scan URLs to TeamCity via Gradle's logging infrastructure. The service 
-message is only interpreted by TeamCity if the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin) is enabled 
+The TeamCity build scan Gradle plugin sends a service message that contains the published build scan URLs to TeamCity via Gradle's logging infrastructure. The service
+message is only interpreted by TeamCity if the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-build-scan-plugin) is enabled
 on the TeamCity server.
 
 # Design
@@ -29,16 +29,40 @@ The service message sent via Gradle's logging infrastructure follows the message
 
 ## Apply TeamCity build scan Gradle plugin
 
-Apply the `nu.studer.build-scan.teamcity` plugin to your Gradle plugin project.
+### Project-application
+
+For Gradle versions < 6.0, apply the `nu.studer.build-scan.teamcity` plugin (and the `com.gradle.build-scan` plugin) to your Gradle project.
 
 ```groovy
 plugins {
-  id 'nu.studer.build-scan.teamcity' version '1.0'
+  id 'nu.studer.build-scan.teamcity' version '1.1'
+  id 'com.gradle.build-scan' version '3.1.1'
 }
 ```
 
 Please refer to the [Gradle DSL PluginDependenciesSpec](http://www.gradle.org/docs/current/dsl/org.gradle.plugin.use.PluginDependenciesSpec.html) to
 understand the behavior and limitations when using the new syntax to declare plugin dependencies.
+
+### Settings-application
+
+For Gradle versions >= 6.0, apply the `nu.studer.build-scan.teamcity` plugin (and the `com.gradle.enterprise` plugin) to your Gradle settings file.
+
+```groovy
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'nu.studer:gradle-build-scan-teamcity-plugin:1.1'
+    }
+}
+
+plugins {
+  id 'com.gradle.enterprise' version '3.1.1'
+}
+
+apply plugin: 'nu.studer.build-scan.teamcity'
+```
 
 # Feedback and Contributions
 
