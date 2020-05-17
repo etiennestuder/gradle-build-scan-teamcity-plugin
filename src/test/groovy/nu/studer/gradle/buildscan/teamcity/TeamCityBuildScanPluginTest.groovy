@@ -49,7 +49,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
         and:
         buildFile << """
             plugins {
-                id 'com.gradle.build-scan' version '3.1.1'
+                id 'com.gradle.build-scan' version '3.3.1'
                 id 'nu.studer.build-scan.teamcity'
             }
 
@@ -76,7 +76,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
         buildFile << """
             plugins {
                 id 'nu.studer.build-scan.teamcity'
-                id 'com.gradle.build-scan' version '3.1.1'
+                id 'com.gradle.build-scan' version '3.3.1'
             }
 
             buildScan {
@@ -126,7 +126,7 @@ buildscript {
 }
 
 plugins {
-  id 'com.gradle.enterprise' version '3.1.1'
+  id 'com.gradle.enterprise' version '3.3.1'
 }
 
 apply plugin: 'nu.studer.build-scan.teamcity'
