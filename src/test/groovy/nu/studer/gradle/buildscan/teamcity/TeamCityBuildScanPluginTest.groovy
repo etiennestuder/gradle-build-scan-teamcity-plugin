@@ -16,7 +16,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
     @AutoCleanup
     def mockScansServer = GroovyEmbeddedApp.of {
-        def jsonWritter = new ObjectMapper(new JsonFactory()).writer()
+        def jsonWriter = new ObjectMapper(new JsonFactory()).writer()
         handlers {
             prefix('scans/publish') {
                 post('gradle/:pluginVersion/token') {
@@ -30,7 +30,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
                     ]
                     context.response
                             .contentType('application/vnd.gradle.scan-ack+json')
-                            .send(jsonWritter.writeValueAsBytes(body))
+                            .send(jsonWriter.writeValueAsBytes(body))
                 }
                 post('gradle/:pluginVersion/upload') {
                     context.request.getBody(1024 * 1024 * 10).then {
