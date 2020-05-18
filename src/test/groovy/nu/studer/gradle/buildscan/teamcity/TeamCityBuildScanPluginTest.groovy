@@ -1,5 +1,6 @@
 package nu.studer.gradle.buildscan.teamcity
 
+import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
@@ -12,15 +13,40 @@ import java.util.zip.GZIPOutputStream
 class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
     static final String PUBLIC_BUILD_SCAN_ID = "i2wepy2gr7ovw"
+    static final String DEFAULT_SCAN_UPLOAD_TOKEN = 'scan-upload-token'
 
     static final String BUILD_SCAN_PLUGIN_CLASSPATH_SYS_PROP = 'buildScanPluginClasspath'
     static final String GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP = 'gradleEnterprisePluginClasspath'
 
+
     @AutoCleanup
     def mockScansServer = GroovyEmbeddedApp.of {
+        def jsonWritter = new ObjectMapper(new JsonFactory()).writer()
         def objectMapper = new ObjectMapper(new SmileFactory())
-
         handlers {
+            prefix('scans/publish') {
+                post('gradle/:pluginVersion/token') {
+                    def pluginVersion = context.pathTokens.pluginVersion
+                    def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_BUILD_SCAN_ID
+                    def body = [
+                            id: PUBLIC_BUILD_SCAN_ID,
+                            scanUrl: scanUrlString.toString(),
+                            scanUploadUrl: "${mockScansServer.address.toString()}scans/publish/gradle/$pluginVersion/upload".toString(),
+                            scanUploadToken: DEFAULT_SCAN_UPLOAD_TOKEN
+                    ]
+                    context.response
+                            .contentType('application/vnd.gradle.scan-ack+json')
+                            .send(jsonWritter.writeValueAsBytes(body))
+                }
+                post('gradle/:pluginVersion/upload') {
+                    context.request.getBody(1024 * 1024 * 10).then {
+                        context.response
+                                .contentType('application/vnd.gradle.scan-upload-ack+json')
+                                .send()
+                    }
+                }
+                notFound()
+            }
             post("in/:gradleVersion/:pluginVersion") { ctx ->
                 def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_BUILD_SCAN_ID
                 def os = new ByteArrayOutputStream()
