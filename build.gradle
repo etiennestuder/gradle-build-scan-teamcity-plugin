@@ -28,7 +28,6 @@ configurations {
 }
 
 dependencies {
-    buildScanPlugin 'com.gradle:build-scan-plugin:2.4.2'
     gradleEnterprisePlugin 'com.gradle:gradle-enterprise-gradle-plugin:3.3.1'
 
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.3.1'
@@ -65,13 +64,10 @@ bintray {
 
 test {
     environment('TEAMCITY_VERSION', '2019.1')
-    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(buildScanPlugin: configurations.buildScanPlugin, gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
+    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
 
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
-
-    @Classpath
-    FileCollection buildScanPlugin
 
     @Classpath
     FileCollection gradleEnterprisePlugin
@@ -79,7 +75,6 @@ final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArg
     @Override
     Iterable<String> asArguments() {
         [
-            "-DbuildScanPluginClasspath=${buildScanPlugin.singleFile.absolutePath}",
             "-DgradleEnterprisePluginClasspath=${gradleEnterprisePlugin.singleFile.absolutePath}"
         ]
     }

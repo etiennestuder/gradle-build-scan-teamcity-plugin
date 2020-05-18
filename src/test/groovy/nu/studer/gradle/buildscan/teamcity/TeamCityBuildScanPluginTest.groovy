@@ -2,27 +2,21 @@ package nu.studer.gradle.buildscan.teamcity
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.smile.SmileFactory
 import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.gradle.util.GradleVersion
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
-
-import java.util.zip.GZIPOutputStream
 
 class TeamCityBuildScanPluginTest extends BaseFuncTest {
 
     static final String PUBLIC_BUILD_SCAN_ID = "i2wepy2gr7ovw"
     static final String DEFAULT_SCAN_UPLOAD_TOKEN = 'scan-upload-token'
 
-    static final String BUILD_SCAN_PLUGIN_CLASSPATH_SYS_PROP = 'buildScanPluginClasspath'
     static final String GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP = 'gradleEnterprisePluginClasspath'
-
 
     @AutoCleanup
     def mockScansServer = GroovyEmbeddedApp.of {
         def jsonWritter = new ObjectMapper(new JsonFactory()).writer()
-        def objectMapper = new ObjectMapper(new SmileFactory())
         handlers {
             prefix('scans/publish') {
                 post('gradle/:pluginVersion/token') {
@@ -47,30 +41,13 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
                 }
                 notFound()
             }
-            post("in/:gradleVersion/:pluginVersion") { ctx ->
-                def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_BUILD_SCAN_ID
-                def os = new ByteArrayOutputStream()
-
-                new GZIPOutputStream(os).withCloseable { stream ->
-                    def generator = objectMapper.getFactory().createGenerator(stream)
-                    generator.writeStartObject()
-                    generator.writeFieldName("id")
-                    generator.writeString(PUBLIC_BUILD_SCAN_ID)
-                    generator.writeFieldName("scanUrl")
-                    generator.writeString(scanUrlString)
-                    generator.writeEndObject()
-                    generator.close()
-                }
-
-                response.contentType("application/vnd.gradle.scan-ack").send(os.toByteArray())
-            }
         }
     }
 
     def "service messages emitted when build scan plugin applied in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
-        addToTestKitRunnerPluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH_SYS_PROP)
+        addToTestKitRunnerPluginClasspath()
 
         and:
         buildFile << """
@@ -96,7 +73,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
     def "service messages emitted when build scan plugin applied after TC gradle plugin in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
-        addToTestKitRunnerPluginClasspath(BUILD_SCAN_PLUGIN_CLASSPATH_SYS_PROP)
+        addToTestKitRunnerPluginClasspath()
 
         and:
         buildFile << """
@@ -141,7 +118,7 @@ class TeamCityBuildScanPluginTest extends BaseFuncTest {
     void "service messages emitted when Gradle Enterprise plugin applied in settings build file"() {
         given:
         gradleVersion = GradleVersion.version('6.0.1')
-        addToTestKitRunnerPluginClasspath(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP)
+        addToTestKitRunnerPluginClasspath()
 
         and:
         settingsFile << """
@@ -200,8 +177,8 @@ apply plugin: 'nu.studer.build-scan.teamcity'
         PluginUnderTestMetadataReading.readImplementationClasspath().collect { it.absolutePath.replace('\\', '\\\\') }.collect { "'$it'" }.join(",")
     }
 
-    protected void addToTestKitRunnerPluginClasspath(String classpathSystemPropertyName) {
-        testKitRunnerPluginClasspath << new File(System.getProperty(classpathSystemPropertyName))
+    protected void addToTestKitRunnerPluginClasspath() {
+        testKitRunnerPluginClasspath << new File(System.getProperty(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP))
     }
 
 }
