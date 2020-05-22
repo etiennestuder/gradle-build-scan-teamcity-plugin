@@ -16,4 +16,4 @@ jobs:
          with:
            java-version: ${{ matrix.java }}
        - name: Build with Gradle
-         run: ./gradlew build test -Pgradle-build-scan-teamcity-plugin.acceptGradleTOS=true
+         run: ./gradlew build -Pgradle-build-scan-teamcity-plugin.acceptGradleTOS=true
