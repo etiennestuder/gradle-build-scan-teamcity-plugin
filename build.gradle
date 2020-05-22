@@ -44,6 +44,19 @@ dependencies {
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.6.2'
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+test {
+    useJUnitPlatform() {
+        includeEngines 'junit-vintage'
+    }
+    environment('TEAMCITY_VERSION', '2019.1')
+    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
+}
+
 plugindev {
     pluginId = 'nu.studer.build-scan.teamcity'
     pluginDescription 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
@@ -63,14 +76,6 @@ bintray {
     key = credentials.BINTRAY_API_KEY
     pkg.repo = 'gradle-plugins'
     dryRun = false
-}
-
-test {
-    useJUnitPlatform() {
-        includeEngines 'junit-vintage'
-    }
-    environment('TEAMCITY_VERSION', '2019.1')
-    jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
 
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
