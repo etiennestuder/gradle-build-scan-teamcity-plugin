@@ -18,7 +18,7 @@ jobs:
        - name: Build with Gradle
          uses: eskatos/gradle-command-action@v1
          with:
-           arguments: build testAll -Pgradle-build-scan-teamcity-plugin.acceptGradleTOS=true
+           arguments: build -Pgradle-build-scan-teamcity-plugin.acceptGradleTOS=true
            wrapper-cache-enabled: true
            dependencies-cache-enabled: true
            configuration-cache-enabled: false
