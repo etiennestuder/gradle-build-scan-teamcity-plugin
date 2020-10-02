@@ -1,3 +1,7 @@
+<p align="left">
+  <a href="https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin/actions?query=workflow%3A%22Build+Gradle+project%22"><img src="https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin/workflows/Build%20Gradle%20project/badge.svg"></a>
+</p>
+
 gradle-build-scan-teamcity-plugin
 =================================
 
