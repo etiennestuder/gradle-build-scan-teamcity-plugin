@@ -178,7 +178,8 @@ apply plugin: 'nu.studer.build-scan.teamcity'
     }
 
     protected void addToTestKitRunnerPluginClasspath() {
-        testKitRunnerPluginClasspath << new File(System.getProperty(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP))
+        String classpath = System.getProperty(GRADLE_ENTERPRISE_PLUGIN_CLASSPATH_SYS_PROP)
+        testKitRunnerPluginClasspath.addAll(classpath.split(File.pathSeparator).collect { new File(it) })
     }
 
 }
