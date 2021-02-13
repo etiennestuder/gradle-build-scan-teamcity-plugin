@@ -69,7 +69,7 @@ final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArg
     @Override
     Iterable<String> asArguments() {
         [
-            "-DgradleEnterprisePluginClasspath=${gradleEnterprisePlugin.asPath}"
+            "-DgradleEnterprisePluginClasspath=$gradleEnterprisePlugin.asPath"
         ]
     }
 
