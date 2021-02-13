@@ -7,7 +7,7 @@ import org.gradle.util.GradleVersion
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
 
-class TeamCityBuildScanPluginTest extends BaseFuncTest {
+class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
 
     static final String PUBLIC_BUILD_SCAN_ID = "i2wepy2gr7ovw"
     static final String DEFAULT_SCAN_UPLOAD_TOKEN = 'scan-upload-token'
