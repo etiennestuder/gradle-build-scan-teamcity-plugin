@@ -42,7 +42,7 @@ test {
     useJUnitPlatform() {
         includeEngines 'junit-vintage'
     }
-    environment('TEAMCITY_VERSION', '2019.1')
+    environment('TEAMCITY_VERSION', '2020.2.2')
     jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
 
