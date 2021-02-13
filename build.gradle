@@ -24,13 +24,9 @@ dependencies {
 
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.5.2'
 
-    testImplementation 'io.ratpack:ratpack-groovy-test:1.8.2', {
-        exclude module: 'groovy-all'
-    }
-    testImplementation('org.spockframework:spock-core:1.3-groovy-2.5') {
-        exclude module: 'groovy-all'
-    }
-    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.7.1'
+    testImplementation 'io.ratpack:ratpack-groovy-test:1.8.2'
+    testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-2.5'
+    testImplementation 'org.spockframework:spock-junit4:2.0-M4-groovy-2.5'
 }
 
 java {
@@ -39,9 +35,7 @@ java {
 }
 
 test {
-    useJUnitPlatform() {
-        includeEngines 'junit-vintage'
-    }
+    useJUnitPlatform()
     environment('TEAMCITY_VERSION', '2020.2.2')
     jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
