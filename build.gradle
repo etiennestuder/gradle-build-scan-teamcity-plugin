@@ -53,13 +53,6 @@ plugindev {
     done()
 }
 
-bintray {
-    user = credentials.BINTRAY_USER
-    key = credentials.BINTRAY_API_KEY
-    pkg.repo = 'gradle-plugins'
-    dryRun = false
-}
-
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
 
     @Classpath
