@@ -50,32 +50,19 @@ For Gradle versions < 6.0, apply the `nu.studer.build-scan.teamcity` plugin (and
 ```groovy
 plugins {
   id 'nu.studer.build-scan.teamcity' version '1.1'
-  id 'com.gradle.build-scan' version '3.1.1'
+  id 'com.gradle.build-scan' version '3.6.3'
 }
 ```
-
-Please refer to the [Gradle DSL PluginDependenciesSpec](http://www.gradle.org/docs/current/dsl/org.gradle.plugin.use.PluginDependenciesSpec.html) to
-understand the behavior and limitations when using the new syntax to declare plugin dependencies.
 
 ### Settings-application
 
 For Gradle versions >= 6.0, apply the `nu.studer.build-scan.teamcity` plugin (and the `com.gradle.enterprise` plugin) to your Gradle settings file.
 
 ```groovy
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath 'nu.studer:gradle-build-scan-teamcity-plugin:1.1'
-    }
-}
-
 plugins {
-  id 'com.gradle.enterprise' version '3.1.1'
+  id 'nu.studer.build-scan.teamcity' version '1.1'
+  id 'com.gradle.enterprise' version '3.6.3'
 }
-
-apply plugin: 'nu.studer.build-scan.teamcity'
 ```
 
 # Feedback and Contributions
