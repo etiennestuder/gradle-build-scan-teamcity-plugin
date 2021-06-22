@@ -1,5 +1,6 @@
 plugins {
-    id 'nu.studer.plugindev' version '2.0'
+    id 'nu.studer.plugindev' version '3.0'
+    id 'com.gradle.plugin-publish' version '0.15.0'
     id 'nu.studer.credentials' version '2.1'
     id 'org.nosphere.gradle.github.actions' version '1.2.0'
     id 'groovy'
@@ -28,29 +29,37 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.0-groovy-2.5'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
 test {
     useJUnitPlatform()
     environment('TEAMCITY_VERSION', '2020.2.2')
     jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
 }
 
-plugindev {
-    pluginId = 'nu.studer.build-scan.teamcity'
-    pluginDescription 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
-    pluginImplementationClass 'nu.studer.gradle.buildscan.teamcity.TeamCityBuildScanPlugin'
-    pluginLicenses 'Apache-2.0'
-    pluginTags 'gradle', 'plugin', 'teamcity', 'build scan'
-    authorId 'etiennestuder'
-    authorName 'Etienne Studer'
-    authorEmail 'etienne@studer.nu'
-    projectUrl 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
-    projectInceptionYear '2019'
-    done()
+gradlePlugin {
+    plugins {
+        pluginDevPlugin {
+            id = 'nu.studer.build-scan.teamcity'
+            implementationClass = 'nu.studer.gradle.buildscan.teamcity.TeamCityBuildScanPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
+    vcsUrl = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
+    description = 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
+    tags = ['build scan', 'teamcity']
+
+    plugins {
+        pluginDevPlugin {
+            displayName = 'gradle-build-scan-teamcity-plugin'
+        }
+    }
+
+    mavenCoordinates {
+        groupId = 'nu.studer'
+        artifactId = 'gradle-build-scan-teamcity-plugin'
+    }
 }
 
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
