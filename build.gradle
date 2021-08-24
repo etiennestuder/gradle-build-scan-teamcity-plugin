@@ -28,6 +28,16 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
 }
 
+project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClasspath'].contains(c.name) }.all {
+    resolutionStrategy.with {
+        eachDependency {
+            if (requested.group == 'org.codehaus.groovy') {
+                useVersion '3.0.8'
+            }
+        }
+    }
+}
+
 test {
     useJUnitPlatform()
     environment('TEAMCITY_VERSION', '2020.2.2')
