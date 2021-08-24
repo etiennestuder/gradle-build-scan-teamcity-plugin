@@ -24,7 +24,7 @@ dependencies {
 
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.6.3'
 
-    testImplementation 'io.ratpack:ratpack-groovy-test:1.8.2'
+    testImplementation 'io.ratpack:ratpack-groovy-test:1.9.0'
     testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
 }
 
