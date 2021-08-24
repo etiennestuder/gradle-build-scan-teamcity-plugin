@@ -6,6 +6,7 @@ import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.gradle.util.GradleVersion
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
+import spock.lang.IgnoreIf
 
 class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
 
@@ -44,6 +45,7 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         }
     }
 
+    @IgnoreIf({ jvm.isJava13Compatible() })
     def "service messages emitted when build scan plugin applied in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
@@ -70,6 +72,7 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
+    @IgnoreIf({ jvm.isJava13Compatible() })
     def "service messages emitted when build scan plugin applied after TC gradle plugin in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
@@ -96,6 +99,7 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
+    @IgnoreIf({ jvm.isJava13Compatible() })
     def "no service messages emitted when build scan plugin not applied in project build file"() {
         given:
         gradleVersion = GradleVersion.version('5.6.4')
