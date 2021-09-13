@@ -6,7 +6,7 @@ import org.gradle.testkit.runner.internal.PluginUnderTestMetadataReading
 import org.gradle.util.GradleVersion
 import ratpack.groovy.test.embed.GroovyEmbeddedApp
 import spock.lang.AutoCleanup
-import spock.lang.IgnoreIf
+import spock.lang.Requires
 
 class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
 
@@ -24,20 +24,20 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
                     def pluginVersion = context.pathTokens.pluginVersion
                     def scanUrlString = "${mockScansServer.address}s/" + PUBLIC_BUILD_SCAN_ID
                     def body = [
-                            id: PUBLIC_BUILD_SCAN_ID,
-                            scanUrl: scanUrlString.toString(),
-                            scanUploadUrl: "${mockScansServer.address.toString()}scans/publish/gradle/$pluginVersion/upload".toString(),
-                            scanUploadToken: DEFAULT_SCAN_UPLOAD_TOKEN
+                        id             : PUBLIC_BUILD_SCAN_ID,
+                        scanUrl        : scanUrlString.toString(),
+                        scanUploadUrl  : "${mockScansServer.address.toString()}scans/publish/gradle/$pluginVersion/upload".toString(),
+                        scanUploadToken: DEFAULT_SCAN_UPLOAD_TOKEN
                     ]
                     context.response
-                            .contentType('application/vnd.gradle.scan-ack+json')
-                            .send(jsonWriter.writeValueAsBytes(body))
+                        .contentType('application/vnd.gradle.scan-ack+json')
+                        .send(jsonWriter.writeValueAsBytes(body))
                 }
                 post('gradle/:pluginVersion/upload') {
                     context.request.getBody(1024 * 1024 * 10).then {
                         context.response
-                                .contentType('application/vnd.gradle.scan-upload-ack+json')
-                                .send()
+                            .contentType('application/vnd.gradle.scan-upload-ack+json')
+                            .send()
                     }
                 }
                 notFound()
@@ -45,16 +45,15 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         }
     }
 
-    @IgnoreIf({ jvm.isJava13Compatible() })
+    @Requires({ (determineGradleVersion().baseVersion < GradleVersion.version('6.0')) })
     def "service messages emitted when build scan plugin applied in project build file"() {
         given:
-        gradleVersion = GradleVersion.version('5.6.4')
         addToTestKitRunnerPluginClasspath()
 
         and:
         buildFile << """
             plugins {
-                id 'com.gradle.build-scan' version '3.3.1'
+                id 'com.gradle.build-scan' version '3.6.4'
                 id 'nu.studer.build-scan.teamcity'
             }
 
@@ -72,17 +71,16 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
-    @IgnoreIf({ jvm.isJava13Compatible() })
+    @Requires({ (determineGradleVersion().baseVersion < GradleVersion.version('6.0')) })
     def "service messages emitted when build scan plugin applied after TC gradle plugin in project build file"() {
         given:
-        gradleVersion = GradleVersion.version('5.6.4')
         addToTestKitRunnerPluginClasspath()
 
         and:
         buildFile << """
             plugins {
                 id 'nu.studer.build-scan.teamcity'
-                id 'com.gradle.build-scan' version '3.3.1'
+                id 'com.gradle.build-scan' version '3.6.4'
             }
 
             buildScan {
@@ -99,12 +97,9 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
-    @IgnoreIf({ jvm.isJava13Compatible() })
+    @Requires({ (determineGradleVersion().baseVersion < GradleVersion.version('6.0')) })
     def "no service messages emitted when build scan plugin not applied in project build file"() {
         given:
-        gradleVersion = GradleVersion.version('5.6.4')
-
-        and:
         buildFile << """
             plugins {
                 id 'nu.studer.build-scan.teamcity'
@@ -119,9 +114,9 @@ class TeamCityBuildScanPluginFuncTest extends BaseFuncTest {
         !result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
+    @Requires({ (determineGradleVersion().baseVersion >= GradleVersion.version('6.0')) })
     void "service messages emitted when Gradle Enterprise plugin applied in settings build file"() {
         given:
-        gradleVersion = GradleVersion.version('6.0.1')
         addToTestKitRunnerPluginClasspath()
 
         and:
@@ -133,7 +128,7 @@ buildscript {
 }
 
 plugins {
-  id 'com.gradle.enterprise' version '3.3.1'
+  id 'com.gradle.enterprise' version '3.6.4'
 }
 
 apply plugin: 'nu.studer.build-scan.teamcity'
@@ -154,11 +149,9 @@ gradleEnterprise {
         result.output.contains("##teamcity[nu.studer.teamcity.buildscan.buildScanLifeCycle 'BUILD_SCAN_URL:${mockScansServer.address}s/${PUBLIC_BUILD_SCAN_ID}'")
     }
 
+    @Requires({ (determineGradleVersion().baseVersion >= GradleVersion.version('6.0')) })
     void "no service messages emitted when Gradle Enterprise plugin not applied in settings build file"() {
         given:
-        gradleVersion = GradleVersion.version('6.0.1')
-
-        and:
         settingsFile << """
 buildscript {
     dependencies {
