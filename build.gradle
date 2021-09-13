@@ -1,5 +1,9 @@
+import org.gradle.util.GradleVersion
+
+import static java.lang.Integer.parseInt
+
 plugins {
-    id 'nu.studer.plugindev' version '3.0'
+    id 'nu.studer.plugindev' version '4.1'
     id 'com.gradle.plugin-publish' version '0.15.0'
     id 'org.nosphere.gradle.github.actions' version '1.2.0'
     id 'groovy'
@@ -38,10 +42,41 @@ project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClas
     }
 }
 
-test {
+tasks.withType(AbstractCompile).configureEach {
+    options.compilerArgs <<
+        "-Werror" <<
+        "-Xlint:all"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    javaCompiler.set(javaToolchains.compilerFor { spec ->
+        spec.languageVersion.set(JavaLanguageVersion.of(8))
+        buildScan.value(identityPath.path + "#jvmVersion", spec.languageVersion.get().asInt() as String)
+    } as Provider<? extends JavaCompiler>)
+}
+
+tasks.withType(Test).configureEach {
+    maxParallelForks = 1 // there is currently only a single test class
     useJUnitPlatform()
+
     environment('TEAMCITY_VERSION', '2020.2.2')
     jvmArgumentProviders.add(new PluginUnderTestCommandLineArgumentProvider(gradleEnterprisePlugin: configurations.gradleEnterprisePlugin))
+
+    String testJavaRuntimeVersion = findProperty('testJavaRuntimeVersion') ?: '8'
+    String testGradleVersion = findProperty('testGradleVersion') ?: GradleVersion.current().version
+
+    javaLauncher.set(javaToolchains.launcherFor { spec ->
+        spec.languageVersion.set(JavaLanguageVersion.of(testJavaRuntimeVersion))
+        buildScan.value(identityPath.path + "#jvmVersion", testJavaRuntimeVersion)
+    } as Provider<? extends JavaLauncher>)
+
+    systemProperty 'testContext.gradleVersion', testGradleVersion
+    buildScan.value(identityPath.path + "#gradleVersion", testGradleVersion)
+
+    def incompatibleJavaVsGradleVersions = parseInt(testJavaRuntimeVersion) >= 16 && parseInt(testGradleVersion.substring(0, testGradleVersion.indexOf('.'))) < 7
+    if (incompatibleJavaVsGradleVersions) {
+        enabled = false
+    }
 }
 
 gradlePlugin {
