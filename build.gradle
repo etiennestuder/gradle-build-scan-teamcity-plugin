@@ -24,7 +24,7 @@ configurations {
 }
 
 dependencies {
-    gradleEnterprisePlugin 'com.gradle:gradle-enterprise-gradle-plugin:3.6.4'
+    gradleEnterprisePlugin 'com.gradle:gradle-enterprise-gradle-plugin:3.8.1'
 
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.6.4'
 
