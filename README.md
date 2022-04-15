@@ -16,7 +16,7 @@ the [Build scan TeamCity integration](https://github.com/etiennestuder/teamcity-
 Build scans are available as a free service on [scans.gradle.com](https://scans.gradle.com/) and
 commercially via [Gradle Enterprise](https://gradle.com/enterprise).
 
-The plugin is hosted at [Bintray's JCenter](https://bintray.com/etienne/gradle-plugins/gradle-build-scan-teamcity-plugin).
+The plugin is hosted at the [Gradle Plugin Portal](https://plugins.gradle.org/plugin/nu.studer.build-scan.teamcity).
 
 ## Build scan
 
