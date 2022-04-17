@@ -36,7 +36,7 @@ project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClas
     resolutionStrategy.with {
         eachDependency {
             if (requested.group == 'org.codehaus.groovy') {
-                useVersion '3.0.8'
+                useVersion GroovySystem.getVersion()
             }
         }
     }
