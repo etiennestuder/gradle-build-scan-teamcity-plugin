@@ -29,7 +29,7 @@ dependencies {
     compileOnly 'com.gradle:gradle-enterprise-gradle-plugin:3.6.4'
 
     testImplementation 'io.ratpack:ratpack-groovy-test:1.9.0'
-    testImplementation 'org.spockframework:spock-core:2.1-groovy-3.0'
+    testImplementation 'org.spockframework:spock-core:2.2-groovy-4.0'
 }
 
 project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClasspath'].contains(c.name) }.all {
