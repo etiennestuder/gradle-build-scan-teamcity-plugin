@@ -83,6 +83,8 @@ gradlePlugin {
     plugins {
         pluginDevPlugin {
             id = 'nu.studer.build-scan.teamcity'
+            displayName = 'gradle-build-scan-teamcity-plugin'
+            description = 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
             implementationClass = 'nu.studer.gradle.buildscan.teamcity.TeamCityBuildScanPlugin'
         }
     }
@@ -91,19 +93,7 @@ gradlePlugin {
 pluginBundle {
     website = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
     vcsUrl = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
-    description = 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
     tags = ['build scan', 'teamcity']
-
-    plugins {
-        pluginDevPlugin {
-            displayName = 'gradle-build-scan-teamcity-plugin'
-        }
-    }
-
-    mavenCoordinates {
-        groupId = 'nu.studer'
-        artifactId = 'gradle-build-scan-teamcity-plugin'
-    }
 }
 
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
