@@ -80,20 +80,17 @@ tasks.withType(Test).configureEach {
 }
 
 gradlePlugin {
+    website = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
+    vcsUrl = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
     plugins {
         pluginDevPlugin {
             id = 'nu.studer.build-scan.teamcity'
             displayName = 'gradle-build-scan-teamcity-plugin'
             description = 'Gradle plugin for build scans that notifies TeamCity when a build scan is published during a build.'
+            tags.set(['build scan', 'teamcity'])
             implementationClass = 'nu.studer.gradle.buildscan.teamcity.TeamCityBuildScanPlugin'
         }
     }
-}
-
-pluginBundle {
-    website = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
-    vcsUrl = 'https://github.com/etiennestuder/gradle-build-scan-teamcity-plugin'
-    tags = ['build scan', 'teamcity']
 }
 
 final class PluginUnderTestCommandLineArgumentProvider implements CommandLineArgumentProvider {
