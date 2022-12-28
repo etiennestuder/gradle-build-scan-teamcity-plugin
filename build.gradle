@@ -32,7 +32,7 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.2-groovy-3.0'
 }
 
-project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClasspath'].contains(c.name) }.all {
+project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClasspath'].contains(c.name) }.configureEach {
     resolutionStrategy.with {
         eachDependency {
             if (requested.group == 'org.codehaus.groovy') {
