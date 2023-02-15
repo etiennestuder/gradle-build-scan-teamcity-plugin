@@ -45,6 +45,7 @@ project.configurations.matching { c -> ['testCompileClasspath', 'testRuntimeClas
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(8)
+        vendor = JvmVendorSpec.BELLSOFT
     }
 }
 
