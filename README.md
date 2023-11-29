@@ -61,7 +61,7 @@ For Gradle versions >= 6.0, apply the `nu.studer.build-scan.teamcity` plugin (an
 ```groovy
 plugins {
   id 'nu.studer.build-scan.teamcity' version '1.1'
-  id 'com.gradle.enterprise' version '3.6.3'
+  id 'com.gradle.enterprise' version '3.15.1'
 }
 ```
 
